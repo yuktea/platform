@@ -25,6 +25,7 @@ class CoreConfig extends ContainerConfig
             'export_jobs'          => $di->lazyGet('authorizer.export_job'),
             'country_codes'        => $di->lazyGet('authorizer.country_code'),
             'external_auth'        => $di->lazyGet('authorizer.external_auth'),
+            'v4.forms'                => $di->lazyGet('authorizer.v4.form'),
             'forms'                => $di->lazyGet('authorizer.form'),
             'form_contacts'        => $di->lazyGet('authorizer.form_contact'),
             'form_attributes'      => $di->lazyGet('authorizer.form_attribute'),
@@ -65,6 +66,7 @@ class CoreConfig extends ContainerConfig
             'dataproviders'        => $di->lazyGet('repository.dataprovider'),
             'targeted_survey_states'   => $di->lazyGet('repository.targeted_survey_state'),
             'forms'                => $di->lazyGet('repository.form'),
+            'v4.forms'                => $di->lazyGet('repository.v4.form'),
             'form_attributes'      => $di->lazyGet('repository.form_attribute'),
             'form_contacts'      => $di->lazyGet('repository.form_contact'),
             'form_stats'      => $di->lazyGet('repository.form_stats'),
@@ -354,6 +356,12 @@ class CoreConfig extends ContainerConfig
         $di->params['Ushahidi\Core\Tool\Authorizer\FormAuthorizer'] = [
             'form_repo' => $di->lazyGet('repository.form'),
         ];
+
+        $di->set('authorizer.v4.form', $di->lazyNew('Ushahidi\Core\Tool\Authorizer\FormAuthorizer'));
+        $di->params['Ushahidi\Core\Tool\Authorizer\FormAuthorizer'] = [
+            'form_repo' => $di->lazyGet('repository.v4.form'),
+        ];
+
         $di->set('authorizer.form_attribute', $di->lazyNew('Ushahidi\Core\Tool\Authorizer\FormAttributeAuthorizer'));
         $di->params['Ushahidi\Core\Tool\Authorizer\FormAttributeAuthorizer'] = [
             'stage_repo' => $di->lazyGet('repository.form_stage'),

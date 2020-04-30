@@ -111,5 +111,9 @@ $app->router->group([
 ], function ($router) {
     require __DIR__.'/../routes/web.php';
 });
-
+$app->router->group([
+    'namespace' => 'Ushahidi\App\Http\Controllers\V4',
+], function ($router) {
+    require __DIR__.'/../routes/v4.php';
+});
 return $app;

@@ -261,6 +261,7 @@ class AppConfig extends ContainerConfig
             'dataproviders'        => $di->lazyNew(\Ushahidi\App\Formatter\Dataprovider::class),
             'country_codes'        => $di->lazyNew(\Ushahidi\App\Formatter\CountryCode::class),
             'export_jobs'          => $di->lazyNew(\Ushahidi\App\Formatter\ExportJob::class),
+            'v4.forms'                => $di->lazyNew(\Ushahidi\App\Formatter\Form::class),
             'forms'                => $di->lazyNew(\Ushahidi\App\Formatter\Form::class),
             'form_attributes'      => $di->lazyNew(\Ushahidi\App\Formatter\Form\Attribute::class),
             'form_roles'           => $di->lazyNew(\Ushahidi\App\Formatter\Form\Role::class),
@@ -374,6 +375,8 @@ class AppConfig extends ContainerConfig
         $di->set('repository.country_code', $di->lazyNew(\Ushahidi\App\Repository\CountryCodeRepository::class));
         $di->set('repository.dataprovider', $di->lazyNew(\Ushahidi\App\Repository\DataproviderRepository::class));
         $di->set('repository.form', $di->lazyNew(\Ushahidi\App\Repository\FormRepository::class));
+        $di->set('repository.v4.form', $di->lazyNew(\Ushahidi\App\Repository\v4\FormRepository::class));
+
         $di->set('repository.form_role', $di->lazyNew(\Ushahidi\App\Repository\Form\RoleRepository::class));
         $di->set('repository.form_contact', $di->lazyNew(\Ushahidi\App\Repository\Form\ContactRepository::class));
         $di->set('repository.form_stats', $di->lazyNew(\Ushahidi\App\Repository\Form\StatsRepository::class));
