@@ -83,11 +83,12 @@ class FormRepository extends OhanzeeRepository implements
         return $this->getCollection($results);
     }
 
-    //@note make sure attributes and stages are sorted by priority always
+    //@TODO make sure attributes and stages are sorted by priority always
     public function hydrate(array $forms): array {
         $results = [];
         $form_ids = array_column($forms, "id");
-        $query_stages = DB::select(
+
+        $stages = DB::select(
             'form_stages.*',
         )
             ->from('forms')
@@ -95,10 +96,10 @@ class FormRepository extends OhanzeeRepository implements
             ->on('forms.id', '=', 'form_stages.form_id')
             ->where('forms.id', 'IN', $form_ids)
             ->order_by('form_stages.id')
-            ->order_by('form_stages.priority');
+            ->order_by('form_stages.priority')
+            ->execute($this->db())->as_array();
 
-        $stages = $query_stages->execute($this->db())->as_array();
-        $query_attributes = DB::select(
+        $attributes = DB::select(
             'form_attributes.*',
         )
             ->from('form_attributes')
@@ -106,30 +107,33 @@ class FormRepository extends OhanzeeRepository implements
             ->on('form_attributes.form_stage_id', '=', 'form_stages.id')
             ->where('form_stages.form_id', 'IN', $form_ids)
             ->order_by('form_attributes.id')
-            ->order_by('form_attributes.priority');
-        $attributes = $query_attributes->execute($this->db())->as_array();
+            ->order_by('form_attributes.priority')
+            ->execute($this->db())->as_array();
 
-        $attributes_per_stage = [];
-        foreach ($attributes as $attribute) {
-            if (!isset($attributes_per_stage[$attribute['form_stage_id']])) {
-                $attributes_per_stage[$attribute['form_stage_id']] = [];
+        // get all attributes associated per stage, and sort them
+        foreach ($stages as &$stage) {
+            $stage['attributes'] = array_values(array_filter($attributes, function ($att) use ($stage) {
+                return $att['form_stage_id'] == $stage['id'];
+            }));
+            if (!$stage['attributes']) {
+                $stage['attributes'] = [];
             }
-            $attributes_per_stage[$attribute['form_stage_id']][] = $attribute;
+            usort($stage['attributes'], function ($a, $b) {
+                return $a['priority'] >= $b['priority'];
+            });
         }
-        $stages_per_form = [];
-        foreach ($stages as $stage) {
-            if (!isset($stages_per_form[$stage['form_id']])) {
-                $stages_per_form[$stage['form_id']] = [];
-            }
-            $stages_per_form[$stage['form_id']] = $stage;
-            $stage_attributes = isset($attributes_per_stage[$stage['id']]) ? $attributes_per_stage[$stage['id']] : [];
-            $stages_per_form[$stage['form_id']]['attributes'] = $stage_attributes;
-        }
+        // get all stages associated per form, and sort them
         foreach ($forms as $form) {
             $result = $form;
-            $result['stages'] = $stages_per_form[$form['id']];
+            $result['stages'] = array_values(array_filter($stages, function ($stg) use ($form) {
+                return $stg['form_id'] == $form['id'];
+            }));
+            usort($result['stages'], function ($a, $b) {
+                return $a['priority'] >= $b['priority'];
+            });
             $results[] = $result;
         }
+
         return $results;
     }
 
