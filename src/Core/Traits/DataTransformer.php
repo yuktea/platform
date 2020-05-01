@@ -194,7 +194,9 @@ trait DataTransformer
             if (!isset($definition[$key])) {
                 continue;
             }
-
+            if ($definition[$key] === 'Collection') {
+                continue;
+            }
             if ($definition[$key] instanceof \Closure) {
                 // Closures are always executed, regardless of value type.
                 $data[$key] = $definition[$key]($val);

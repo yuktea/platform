@@ -9,7 +9,7 @@
  * @license    https://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License Version 3 (AGPL3)
  */
 
-namespace Ushahidi\Core\Usecase;
+namespace Ushahidi\Core\Usecase\Form\v4;
 
 use Ushahidi\Core\Usecase;
 use Ushahidi\Core\SearchData;

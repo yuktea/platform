@@ -261,10 +261,11 @@ class AppConfig extends ContainerConfig
             'dataproviders'        => $di->lazyNew(\Ushahidi\App\Formatter\Dataprovider::class),
             'country_codes'        => $di->lazyNew(\Ushahidi\App\Formatter\CountryCode::class),
             'export_jobs'          => $di->lazyNew(\Ushahidi\App\Formatter\ExportJob::class),
-            'v4.forms'                => $di->lazyNew(\Ushahidi\App\Formatter\Form::class),
+            'v4.forms'                => $di->lazyNew(\Ushahidi\App\Formatter\v4\Form::class),
             'forms'                => $di->lazyNew(\Ushahidi\App\Formatter\Form::class),
             'form_attributes'      => $di->lazyNew(\Ushahidi\App\Formatter\Form\Attribute::class),
             'form_roles'           => $di->lazyNew(\Ushahidi\App\Formatter\Form\Role::class),
+            'v4.form_stages'          => $di->lazyNew(\Ushahidi\App\Formatter\Form\Stage::class),
             'form_stages'          => $di->lazyNew(\Ushahidi\App\Formatter\Form\Stage::class),
             'form_contacts'        => $di->lazyNew(\Ushahidi\App\Formatter\Form\Contact::class),
             'form_stats'           => $di->lazyNew(\Ushahidi\App\Formatter\Form\Stats::class),
@@ -297,6 +298,8 @@ class AppConfig extends ContainerConfig
         $di->setters[\Ushahidi\App\Formatter\CSV::class]['setAuth'] = $di->lazyGet("authorizer.csv");
         $di->setters[\Ushahidi\App\Formatter\Dataprovider::class]['setAuth'] = $di->lazyGet("authorizer.dataprovider");
         $di->setters[\Ushahidi\App\Formatter\ExportJob::class]['setAuth'] = $di->lazyGet("authorizer.export_job");
+        $di->setters[\Ushahidi\App\Formatter\v4\Form::class]['setAuth'] = $di->lazyGet("authorizer.v4.form");
+        $di->setters[\Ushahidi\App\Formatter\v4\Stage::class]['setAuth'] = $di->lazyGet("authorizer.v4.form_stage");
         $di->setters[\Ushahidi\App\Formatter\Form::class]['setAuth'] = $di->lazyGet("authorizer.form");
         $di->setters[\Ushahidi\App\Formatter\Form\Attribute::class]['setAuth']
             = $di->lazyGet("authorizer.form_attribute");
@@ -331,6 +334,9 @@ class AppConfig extends ContainerConfig
         $di->set('tool.jsontranscode', $di->lazyNew('Ushahidi\Core\Tool\JsonTranscode'));
 
         // Formatters
+        $di->set('formatter.entity.v4.form_stages', $di->lazyNew(\Ushahidi\App\Formatter\v4\Stage::class));
+        $di->set('formatter.entity.v4.attributes', $di->lazyNew(\Ushahidi\App\Formatter\Form\Attribute::class));
+
         $di->set('formatter.entity.api', $di->lazyNew(\Ushahidi\App\Formatter\API::class));
         $di->set('formatter.entity.country_code', $di->lazyNew(\Ushahidi\App\Formatter\CountryCode::class));
         $di->set('formatter.entity.console', $di->lazyNew(\Ushahidi\App\Formatter\Console::class));

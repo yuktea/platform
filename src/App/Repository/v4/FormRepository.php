@@ -14,6 +14,7 @@ namespace Ushahidi\App\Repository\v4;
 use Ohanzee\DB;
 use Ushahidi\Core\Entity;
 use Ushahidi\Core\Entity\v4\Form;
+use Ushahidi\Core\Entity\v4\FormStage;
 use Ushahidi\Core\Entity\FormRepository as FormRepositoryContract;
 use Ushahidi\Core\SearchData;
 use Ushahidi\Core\Traits\Event;
@@ -44,8 +45,7 @@ class FormRepository extends OhanzeeRepository implements
             $can_create = $this->getRolesThatCanCreatePosts($data['id']);
             $data = $data + [
                 'can_create' => $can_create['roles'],
-                'tags' => $this->getTagsForForm($data['id']),
-                'stages' => $this->hydrateStages($data["id"])
+                'tags' => $this->getTagsForForm($data['id'])
             ];
         }
 
@@ -83,7 +83,20 @@ class FormRepository extends OhanzeeRepository implements
         return $this->getCollection($results);
     }
 
-    //@TODO make sure attributes and stages are sorted by priority always
+    protected function getArrayOfStages($results)
+    {
+        return array_map(function ($item) {
+            return new Entity\v4\FormStage((array) $item);
+        }, $results);
+    }
+    protected function getArrayOfAttributes($results)
+    {
+        return array_map(function ($item) {
+            return new Entity\v4\FormAttribute((array) $item);
+        }, $results);
+    }
+
+
     public function hydrate(array $forms): array {
         $results = [];
         $form_ids = array_column($forms, "id");
@@ -98,6 +111,7 @@ class FormRepository extends OhanzeeRepository implements
             ->order_by('form_stages.id')
             ->order_by('form_stages.priority')
             ->execute($this->db())->as_array();
+        $stages = $this->getArrayOfStages($stages);
 
         $attributes = DB::select(
             'form_attributes.*',
@@ -109,31 +123,29 @@ class FormRepository extends OhanzeeRepository implements
             ->order_by('form_attributes.id')
             ->order_by('form_attributes.priority')
             ->execute($this->db())->as_array();
+        $attributes = $this->getArrayOfAttributes($attributes);
 
         // get all attributes associated per stage, and sort them
         foreach ($stages as &$stage) {
-            $stage['attributes'] = array_values(array_filter($attributes, function ($att) use ($stage) {
-                return $att['form_stage_id'] == $stage['id'];
+            $stage_attrs = array_values(array_filter($attributes, function ($att) use ($stage) {
+                return $att->form_stage_id == $stage->id;
             }));
-            if (!$stage['attributes']) {
-                $stage['attributes'] = [];
-            }
-            usort($stage['attributes'], function ($a, $b) {
-                return $a['priority'] >= $b['priority'];
+            usort($stage_attrs, function ($a, $b) {
+                return $a->priority >= $b->priority;
             });
+            $stage->setState(['attributes' => $stage_attrs]);
         }
         // get all stages associated per form, and sort them
         foreach ($forms as $form) {
             $result = $form;
             $result['stages'] = array_values(array_filter($stages, function ($stg) use ($form) {
-                return $stg['form_id'] == $form['id'];
+                return $stg->form_id == $form['id'];
             }));
             usort($result['stages'], function ($a, $b) {
-                return $a['priority'] >= $b['priority'];
+                return $a->priority >= $b->priority;
             });
             $results[] = $result;
         }
-
         return $results;
     }
 
@@ -270,7 +282,7 @@ class FormRepository extends OhanzeeRepository implements
             ->order_by('form_stages.id')
             ->order_by('form_stages.priority')
             ->order_by('form_attributes.priority');
-        
+
         if (!empty($form_ids)) {
             $query->where('forms.id', 'IN', $form_ids);
         }

@@ -30,6 +30,7 @@ class CoreConfig extends ContainerConfig
             'form_contacts'        => $di->lazyGet('authorizer.form_contact'),
             'form_attributes'      => $di->lazyGet('authorizer.form_attribute'),
             'form_roles'           => $di->lazyGet('authorizer.form_role'),
+            'v4.form_stages'          => $di->lazyGet('authorizer.v4.form_stage'),
             'form_stages'          => $di->lazyGet('authorizer.form_stage'),
             'form_stats'           => $di->lazyGet('authorizer.form_stats'),
             'tags'                 => $di->lazyGet('authorizer.tag'),
@@ -357,10 +358,19 @@ class CoreConfig extends ContainerConfig
             'form_repo' => $di->lazyGet('repository.form'),
         ];
 
-        $di->set('authorizer.v4.form', $di->lazyNew('Ushahidi\Core\Tool\Authorizer\FormAuthorizer'));
-        $di->params['Ushahidi\Core\Tool\Authorizer\FormAuthorizer'] = [
+        $di->set('authorizer.v4.form', $di->lazyNew('Ushahidi\Core\Tool\Authorizer\v4\FormAuthorizer'));
+        $di->params['Ushahidi\Core\Tool\Authorizer\v4\FormAuthorizer'] = [
             'form_repo' => $di->lazyGet('repository.v4.form'),
+            'stage_repo' => $di->lazyGet('repository.form_stage'),
+            'stage_auth' => $di->lazyGet('authorizer.form_stage'),
         ];
+
+        $di->set('authorizer.v4.form_stage', $di->lazyNew('Ushahidi\Core\Tool\Authorizer\v4\FormStageAuthorizer'));
+        $di->params['Ushahidi\Core\Tool\Authorizer\v4\FormStageAuthorizer'] = [
+            'form_repo' => $di->lazyGet('repository.v4.form'),
+            'form_auth' => $di->lazyGet('authorizer.v4.form'),
+        ];
+
 
         $di->set('authorizer.form_attribute', $di->lazyNew('Ushahidi\Core\Tool\Authorizer\FormAttributeAuthorizer'));
         $di->params['Ushahidi\Core\Tool\Authorizer\FormAttributeAuthorizer'] = [
