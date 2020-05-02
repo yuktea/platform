@@ -161,7 +161,7 @@ class StageRepository extends OhanzeeRepository implements
         * if no form is found return false
         * @param  $form_id
         * @return Array
-        */
+    */
     public function getHiddenStageIds($form_id, $post_status = null)
     {
             $stages = [];

@@ -12,12 +12,13 @@
 namespace Ushahidi\Core\Tool\Authorizer\v4;
 
 use Ushahidi\Core\Entity;
-use Ushahidi\Core\Entity\FormRepository;
+use Ushahidi\Core\Entity\v4\FormRepository;
 use Ushahidi\Core\Tool\Authorizer;
 use Ushahidi\Core\Traits\UserContext;
 
 // The `FormStageAuthorizer` class is responsible for access checks on `Forms`
-class FormStageAuthorizer implements Authorizer
+// we don't implement Ushahidi\Core\Tool\Authorizer here. isAllowed forces extra database queries that we don't need
+class FormStageAuthorizer
 {
     // The access checks are run under the context of a specific user
     use UserContext;
@@ -38,10 +39,8 @@ class FormStageAuthorizer implements Authorizer
     }
 
     /* Authorizer */
-    public function isAllowed(Entity $entity, $privilege)
+    public function isAllowed(Entity $stage, $form, $privilege)
     {
-        $form = $this->getForm($entity);
-
         // All access is based on the form itself, not the stage.
         return $this->form_auth->isAllowed($form, $privilege);
     }

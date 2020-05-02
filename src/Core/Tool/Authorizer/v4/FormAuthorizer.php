@@ -14,7 +14,7 @@ namespace Ushahidi\Core\Tool\Authorizer\v4;
 use Ushahidi\Core\Entity;
 use Ushahidi\Core\Entity\FormStageRepository;
 use Ushahidi\Core\Entity\v4\Form;
-use Ushahidi\Core\Entity\FormRepository;
+use Ushahidi\Core\Entity\v4\FormRepository;
 use Ushahidi\Core\Entity\Permission;
 use Ushahidi\Core\Tool\Authorizer;
 use Ushahidi\Core\Tool\Authorizer\FormStageAuthorizer;

@@ -14,15 +14,12 @@ namespace Ushahidi\App\Repository\v4;
 use Ohanzee\DB;
 use Ushahidi\Core\Entity;
 use Ushahidi\Core\Entity\v4\Form;
-use Ushahidi\Core\Entity\v4\FormStage;
-use Ushahidi\Core\Entity\FormRepository as FormRepositoryContract;
+use Ushahidi\Core\Entity\v4\FormRepository as FormRepositoryContract;
 use Ushahidi\Core\SearchData;
 use Ushahidi\Core\Tool\Permissions\InteractsWithFormPermissions;
 use Ushahidi\Core\Traits\Event;
 use Ushahidi\App\Repository\OhanzeeRepository;
 use Ushahidi\App\Repository\FormsTagsTrait;
-use League\Event\ListenerInterface;
-use Illuminate\Support\Collection;
 use Ushahidi\Core\Traits\UserContext;
 use Ushahidi\Core\Usecase\SearchRepository;
 
@@ -84,9 +81,8 @@ class FormRepository extends OhanzeeRepository implements
     public function getSearchResults()
     {
         $query = $this->getSearchQuery();
-
         $results = $query->distinct(true)->execute($this->db());
-        $results = $this->hydrate($results->as_array());
+        $results = $this->hydrateRelations($results->as_array());
         return $this->getCollection($results);
     }
 
@@ -96,6 +92,7 @@ class FormRepository extends OhanzeeRepository implements
             return new Entity\v4\FormStage((array) $item);
         }, $results);
     }
+
     protected function getArrayOfAttributes($results)
     {
         return array_map(function ($item) {
@@ -104,7 +101,7 @@ class FormRepository extends OhanzeeRepository implements
     }
 
 
-    public function hydrate(array $forms): array {
+    public function hydrateRelations(array $forms): array {
         $results = [];
         $form_ids = array_column($forms, "id");
         $user = $this->getUser();
@@ -221,7 +218,7 @@ class FormRepository extends OhanzeeRepository implements
     /**
      * Get `everyone_can_create` and list of roles that have access to post to the form
      * @param  $form_id
-     * @return Array
+     * @return array
      */
     public function getRolesThatCanCreatePosts($form_id)
     {
@@ -250,59 +247,5 @@ class FormRepository extends OhanzeeRepository implements
             'everyone_can_create' => $everyone_can_create,
             'roles' => $roles,
             ];
-    }
-
-
-    public function hydrateAttributes(id $form_id): Collection {
-        $query = DB::select(
-            'form_attributes.*'
-        )
-            ->from('form_stages')
-            ->join('form_attributes')
-            ->on('form_stages.id', '=', 'form_attributes.form_stage_id')
-            ->where('form_stages.form_id', '=', $form_id)
-            ->order_by('form_attributes.priority');
-        $results = $query->execute($this->db())->as_array();
-        return new Collection($results);
-    }
-
-    public function hydrateStages(int $form_id): Collection {
-        $query = DB::select(
-            '*'
-        )
-            ->from('form_stages')
-            ->where('form_stages.form_id', '=', $form_id)
-            ->order_by('form_stages.id')
-            ->order_by('form_stages.priority');
-        $results = $query->execute($this->db())->as_array();
-        return new Collection($results);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAllFormStagesAttributes(array $form_ids = []): Collection
-    {
-        $query = DB::select(
-            ['forms.id', 'form_id'],
-            ['form_stages.id', 'form_stage_id'],
-            'form_attributes.*'
-        )
-            ->from('forms')
-            ->join('form_stages')
-            ->on('forms.id', '=', 'form_stages.form_id')
-            ->join('form_attributes')
-            ->on('form_stages.id', '=', 'form_attributes.form_stage_id')
-            ->order_by('form_stages.id')
-            ->order_by('form_stages.priority')
-            ->order_by('form_attributes.priority');
-
-        if (!empty($form_ids)) {
-            $query->where('forms.id', 'IN', $form_ids);
-        }
-
-        $results = $query->execute($this->db())->as_array();
-
-        return new Collection($results);
     }
 }

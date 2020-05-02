@@ -12,11 +12,20 @@
 namespace Ushahidi\App\Formatter\v4;
 
 use Ushahidi\App\Formatter\API;
+use Ushahidi\Core\Tool\Authorizer\v4\FormStageAuthorizer;
 use Ushahidi\Core\Traits\FormatterAuthorizerMetadata;
 
 class Stage extends API
 {
     use FormatterAuthorizerMetadata;
+
+    protected $auth;
+
+    public function setAuth(FormStageAuthorizer $auth)
+    {
+        $this->auth = $auth;
+        return $this;
+    }
 
     protected function formatAttributes($attributes)
     {

@@ -97,17 +97,19 @@ class SearchForm extends SearchUsecase
 
         // ... remove any entities that cannot be seen
         $priv = 'read';
+
         foreach ($results as $idx => $entity) {
             if (!$this->auth->isAllowed($entity, $priv)) {
                 // here we should check the entity's stages
                 unset($results[$idx]);
             }
-
-            foreach ($entity->stages as $stage) {
-                if (!$stage_auth->isAllowed($stage, $priv)) {
-                    unset($entity->stages);
+            $entity_stages = [];
+            foreach ($entity->stages as $sid => $stage) {
+                if ($stage_auth->isAllowed($stage, $entity, $priv)) {
+                    $entity_stages[] = $stage;
                 }
             }
+            $results[$idx]->setState(['stages' => $entity_stages]);
         }
 
         // ... pass the search information to the formatter, for paging
