@@ -48,22 +48,14 @@ class FormAuthorizer implements Authorizer
     // It requires a `FormRepository` to load parent posts too.
     protected $form_repo;
 
-    // It requires a `FormStageRepository` to load the owning form.
-    protected $stage_repo;
-
-    // It requires a `FormStageAuthorizer` to check privileges against the owning form.
-    protected $stage_auth;
-
     /**
      * @param FormRepository $form_repo
      * @param FormStageRepository $stage_repo
      * @param FormStageAuthorizer $stage_auth
      */
-    public function __construct(FormRepository $form_repo, FormStageRepository $stage_repo, FormStageAuthorizer $stage_auth)
+    public function __construct(FormRepository $form_repo)
     {
         $this->form_repo = $form_repo;
-        $this->stage_repo = $stage_repo;
-        $this->stage_auth = $stage_auth;
     }
 
     /* Authorizer */
@@ -108,23 +100,6 @@ class FormAuthorizer implements Authorizer
         return false;
     }
 
-    /* Authorizer */
-    public function stageIsAllowed(Entity $entity, $privilege)
-    {
-        $stage = $this->getFormStage($entity);
-
-        // All access is based on the stage, not the attribute
-        return $this->stage_auth->isAllowed($stage, $privilege);
-    }
-
-    /* Authorizer */
-    public function stageGetAllowedPrivs(Entity $entity)
-    {
-        $stage = $this->getFormStage($entity);
-
-        // All access is based on the stage, not the attribute
-        return $this->stage_auth->getAllowedPrivs($stage);
-    }
 
     /**
      * Get the form associated with this stage.

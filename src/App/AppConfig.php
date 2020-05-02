@@ -383,11 +383,13 @@ class AppConfig extends ContainerConfig
         $di->set('repository.form', $di->lazyNew(\Ushahidi\App\Repository\FormRepository::class));
         $di->set('repository.v4.form', $di->lazyNew(\Ushahidi\App\Repository\v4\FormRepository::class));
 
+
         $di->set('repository.form_role', $di->lazyNew(\Ushahidi\App\Repository\Form\RoleRepository::class));
         $di->set('repository.form_contact', $di->lazyNew(\Ushahidi\App\Repository\Form\ContactRepository::class));
         $di->set('repository.form_stats', $di->lazyNew(\Ushahidi\App\Repository\Form\StatsRepository::class));
 
         $di->set('repository.form_stage', $di->lazyNew(\Ushahidi\App\Repository\Form\StageRepository::class));
+        $di->set('repository.v4.form_stage', $di->lazyNew(\Ushahidi\App\Repository\v4\StageRepository::class));
         $di->set('repository.form_attribute', $di->lazyNew(\Ushahidi\App\Repository\Form\AttributeRepository::class));
         $di->set('repository.layer', $di->lazyNew(\Ushahidi\App\Repository\LayerRepository::class));
         $di->set('repository.media', $di->lazyNew(\Ushahidi\App\Repository\MediaRepository::class));
@@ -473,6 +475,10 @@ class AppConfig extends ContainerConfig
             'form_repo' => $di->lazyGet('repository.form')
         ];
 
+        // Form Stage repository parameters
+        $di->params[\Ushahidi\App\Repository\v4\StageRepository::class] = [
+            'form_repo' => $di->lazyGet('repository.v4.form')
+        ];
         // Form Contact repository parameters
         $di->params[\Ushahidi\App\Repository\Form\ContactRepository::class] = [
             'form_repo' => $di->lazyGet('repository.form'),

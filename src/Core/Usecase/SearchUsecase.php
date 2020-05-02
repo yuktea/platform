@@ -96,7 +96,6 @@ class SearchUsecase implements Usecase
         $priv = 'read';
         foreach ($results as $idx => $entity) {
             if (!$this->auth->isAllowed($entity, $priv)) {
-                // here we should check the entity's stages
                 unset($results[$idx]);
             }
         }

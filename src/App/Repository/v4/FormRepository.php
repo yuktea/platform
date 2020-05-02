@@ -17,17 +17,24 @@ use Ushahidi\Core\Entity\v4\Form;
 use Ushahidi\Core\Entity\v4\FormStage;
 use Ushahidi\Core\Entity\FormRepository as FormRepositoryContract;
 use Ushahidi\Core\SearchData;
+use Ushahidi\Core\Tool\Permissions\InteractsWithFormPermissions;
 use Ushahidi\Core\Traits\Event;
 use Ushahidi\App\Repository\OhanzeeRepository;
 use Ushahidi\App\Repository\FormsTagsTrait;
 use League\Event\ListenerInterface;
 use Illuminate\Support\Collection;
+use Ushahidi\Core\Traits\UserContext;
+use Ushahidi\Core\Usecase\SearchRepository;
 
 class FormRepository extends OhanzeeRepository implements
-    FormRepositoryContract
+    FormRepositoryContract,
+    SearchRepository
 {
     use FormsTagsTrait;
+    use InteractsWithFormPermissions;
 
+    // The access checks are run under the context of a specific user
+    use UserContext;
     // Use Event trait to trigger events
     use Event;
 
@@ -100,14 +107,21 @@ class FormRepository extends OhanzeeRepository implements
     public function hydrate(array $forms): array {
         $results = [];
         $form_ids = array_column($forms, "id");
+        $user = $this->getUser();
 
-        $stages = DB::select(
+        $stages_query = DB::select(
             'form_stages.*',
         )
             ->from('forms')
             ->join('form_stages')
             ->on('forms.id', '=', 'form_stages.form_id')
-            ->where('forms.id', 'IN', $form_ids)
+            ->where('forms.id', 'IN', $form_ids);
+        // canUserEditForm is weird and doesn't check for form_id at all :shrugs:
+        if (!$this->formPermissions->canUserEditForm($user, null)) {
+            $stages_query->where('show_when_published', '=', "1");
+            $stages_query->where('task_is_internal_only', '=', "0");
+        }
+        $stages = $stages_query
             ->order_by('form_stages.id')
             ->order_by('form_stages.priority')
             ->execute($this->db())->as_array();

@@ -73,6 +73,7 @@ class CoreConfig extends ContainerConfig
             'form_stats'      => $di->lazyGet('repository.form_stats'),
             'form_roles'           => $di->lazyGet('repository.form_role'),
             'form_stages'          => $di->lazyGet('repository.form_stage'),
+            'v4.form_stages'                => $di->lazyGet('repository.v4.form_stage'),
             'layers'               => $di->lazyGet('repository.layer'),
             'media'                => $di->lazyGet('repository.media'),
             'messages'             => $di->lazyGet('repository.message'),
@@ -143,11 +144,23 @@ class CoreConfig extends ContainerConfig
         // It is also possible to overload usecases by setting a specific resource and action.
         // The same collaborator mapping will be applied by action as with default use cases.
         $di->params['Ushahidi\Factory\UsecaseFactory']['map'] = [];
+        // Each of the actions follows a standard sequence of events and is simply constructed
+        // with a unique set of collaborators that follow specific interfaces.
 
         // Config does not allow ordering or sorting, because of its simple key/value nature.
         $di->params['Ushahidi\Factory\UsecaseFactory']['map']['config'] = [
             'search' => $di->newFactory('Ushahidi\Core\Usecase\Config\SearchConfig'),
         ];
+
+        $di->params['Ushahidi\Factory\UsecaseFactory']['map']['v4.forms'] = [
+            'create' => $di->newFactory('Ushahidi\Core\Usecase\CreateUsecase'),
+            'read'   => $di->newFactory('Ushahidi\Core\Usecase\ReadUsecase'),
+            'update' => $di->newFactory('Ushahidi\Core\Usecase\UpdateUsecase'),
+            'delete' => $di->newFactory('Ushahidi\Core\Usecase\DeleteUsecase'),
+            'search' => $di->newFactory('Ushahidi\Core\Usecase\Form\v4\SearchForm'),
+            'options'=> $di->newFactory('Ushahidi\Core\Usecase\OptionsUsecase'),
+        ];
+
 
         // Form sub-endpoints must verify that the form exists before anything else.
         $di->params['Ushahidi\Factory\UsecaseFactory']['map']['form_attributes'] = [
@@ -360,9 +373,7 @@ class CoreConfig extends ContainerConfig
 
         $di->set('authorizer.v4.form', $di->lazyNew('Ushahidi\Core\Tool\Authorizer\v4\FormAuthorizer'));
         $di->params['Ushahidi\Core\Tool\Authorizer\v4\FormAuthorizer'] = [
-            'form_repo' => $di->lazyGet('repository.v4.form'),
-            'stage_repo' => $di->lazyGet('repository.form_stage'),
-            'stage_auth' => $di->lazyGet('authorizer.form_stage'),
+            'form_repo' => $di->lazyGet('repository.v4.form')
         ];
 
         $di->set('authorizer.v4.form_stage', $di->lazyNew('Ushahidi\Core\Tool\Authorizer\v4\FormStageAuthorizer'));
@@ -370,7 +381,6 @@ class CoreConfig extends ContainerConfig
             'form_repo' => $di->lazyGet('repository.v4.form'),
             'form_auth' => $di->lazyGet('authorizer.v4.form'),
         ];
-
 
         $di->set('authorizer.form_attribute', $di->lazyNew('Ushahidi\Core\Tool\Authorizer\FormAttributeAuthorizer'));
         $di->params['Ushahidi\Core\Tool\Authorizer\FormAttributeAuthorizer'] = [
