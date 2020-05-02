@@ -80,7 +80,6 @@ class PostAuthorizer implements Authorizer
     {
         // These checks are run within the user context.
         $user = $this->getUser();
-
         // Only logged in users have access if the deployment is private
         if (!$this->canAccessDeployment($user)) {
             return false;

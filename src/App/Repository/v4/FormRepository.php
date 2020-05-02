@@ -100,40 +100,48 @@ class FormRepository extends OhanzeeRepository implements
         }, $results);
     }
 
+    /**
+     * Use the search filter authorization from stages in the Form Repo queries
+     * @param $stages_query
+     * @return mixed
+     */
+    private function authorizeRelatedStages($stages_query) {
+        $user = $this->getUser();
+        // canUserEditForm is weird and doesn't check for form_id at all :shrugs:
+        if (!$this->formPermissions->canUserEditForm($user, null)) {
+            $stages_query->where('form_stages.show_when_published', '=', "1");
+            $stages_query->where('form_stages.task_is_internal_only', '=', "0");
+        }
+        return $stages_query;
+    }
 
     public function hydrateRelations(array $forms): array {
         $results = [];
         $form_ids = array_column($forms, "id");
-        $user = $this->getUser();
-
-        $stages_query = DB::select(
-            'form_stages.*',
-        )
+        // get all stages in 1 query
+        $stages_query = DB::select('form_stages.*')
             ->from('forms')
             ->join('form_stages')
             ->on('forms.id', '=', 'form_stages.form_id')
             ->where('forms.id', 'IN', $form_ids);
-        // canUserEditForm is weird and doesn't check for form_id at all :shrugs:
-        if (!$this->formPermissions->canUserEditForm($user, null)) {
-            $stages_query->where('show_when_published', '=', "1");
-            $stages_query->where('task_is_internal_only', '=', "0");
-        }
+        $stages_query = $this->authorizeRelatedStages($stages_query);
         $stages = $stages_query
             ->order_by('form_stages.id')
             ->order_by('form_stages.priority')
             ->execute($this->db())->as_array();
         $stages = $this->getArrayOfStages($stages);
-
-        $attributes = DB::select(
-            'form_attributes.*',
-        )
+        // get all attributes in 1 query
+        $attributes_query = DB::select('form_attributes.*')
             ->from('form_attributes')
             ->join('form_stages')
             ->on('form_attributes.form_stage_id', '=', 'form_stages.id')
-            ->where('form_stages.form_id', 'IN', $form_ids)
-            ->order_by('form_attributes.id')
+            ->where('form_stages.form_id', 'IN', $form_ids);
+        // hide attributes from stages that are hidden :)
+        $attributes_query = $this->authorizeRelatedStages($attributes_query);
+        $attributes = $attributes_query->order_by('form_attributes.id')
             ->order_by('form_attributes.priority')
             ->execute($this->db())->as_array();
+
         $attributes = $this->getArrayOfAttributes($attributes);
 
         // get all attributes associated per stage, and sort them

@@ -122,7 +122,7 @@ class SearchForm extends SearchUsecase
     /**
      * Get an empty entity.
      *
-     * @return Entity
+     * @return \Ushahidi\Core\Usecase\Entity
      */
     protected function getEntity()
     {
@@ -132,7 +132,7 @@ class SearchForm extends SearchUsecase
     /**
      * Get filter parameters and default values that are used for paging.
      *
-     * @return Array
+     * @return array
      */
     protected function getPagingFields()
     {
