@@ -149,6 +149,11 @@ class AppConfig extends ContainerConfig
             'update' => $di->lazyNew(\Ushahidi\App\Validator\Form\Update::class),
             'delete' => $di->lazyNew(\Ushahidi\App\Validator\Form\Delete::class),
         ];
+
+        $di->params['Ushahidi\Factory\ValidatorFactory']['map']['v4.forms'] = [
+            'create' => $di->lazyNew(\Ushahidi\App\Validator\Form\v4\Create::class),
+            'update' => $di->lazyNew(\Ushahidi\App\Validator\Form\v4\Update::class),
+        ];
         $di->params['Ushahidi\Factory\ValidatorFactory']['map']['form_attributes'] = [
             'create' => $di->lazyNew(\Ushahidi\App\Validator\Form\Attribute\Create::class),
             'update' => $di->lazyNew(\Ushahidi\App\Validator\Form\Attribute\Update::class),
@@ -629,6 +634,14 @@ class AppConfig extends ContainerConfig
 
         $di->params[\Ushahidi\App\Validator\Form\Update::class] = [
             'repo' => $di->lazyGet('repository.form'),
+        ];
+
+        $di->params[\Ushahidi\App\Validator\Form\v4\Create::class] = [
+            'repo' => $di->lazyGet('repository.v4.form'),
+        ];
+
+        $di->params[\Ushahidi\App\Validator\Form\v4\Update::class] = [
+            'repo' => $di->lazyGet('repository.v4.form'),
         ];
 
         $di->params[\Ushahidi\App\Validator\Form\Attribute\Update::class] = [

@@ -17,9 +17,10 @@ class Form extends API
 {
     use FormatterAuthorizerMetadata;
 
-    protected function formatStages($stages)
+    protected function formatStages($stages = [])
     {
         $formatter = service('formatter.entity.v4.form_stages');
+        if (!$stages) return [];
         $return = [];
         foreach ($stages as $stage) {
             $return[] = $formatter->__invoke($stage);

@@ -153,7 +153,7 @@ class CoreConfig extends ContainerConfig
         ];
 
         $di->params['Ushahidi\Factory\UsecaseFactory']['map']['v4.forms'] = [
-            'create' => $di->newFactory('Ushahidi\Core\Usecase\CreateUsecase'),
+            'create' => $di->newFactory('Ushahidi\Core\Usecase\Form\v4\CreateForm'),
             'read'   => $di->newFactory('Ushahidi\Core\Usecase\ReadUsecase'),
             'update' => $di->newFactory('Ushahidi\Core\Usecase\UpdateUsecase'),
             'delete' => $di->newFactory('Ushahidi\Core\Usecase\DeleteUsecase'),

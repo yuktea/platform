@@ -13,6 +13,7 @@ namespace Ushahidi\App\Repository\v4;
 
 use Ohanzee\DB;
 use Ushahidi\Core\Entity;
+use Ushahidi\Core\Entity\FormStage;
 use Ushahidi\Core\Entity\v4\Form;
 use Ushahidi\Core\Entity\v4\FormRepository as FormRepositoryContract;
 use Ushahidi\Core\SearchData;
@@ -169,9 +170,24 @@ class FormRepository extends OhanzeeRepository implements
     }
 
     // CreateRepository
+    //@TODO less iteration here? Not sure yet of the best approach.
+    //@TODO return all the created ids
+    //@TODO add a transaction with rollback so we can rollback if something goes wrong
     public function create(Entity $entity)
     {
-        $id = parent::create($entity->setState(['created' => time()]));
+        $stage_repo = service('repository.form_stage');
+        $attribute_repo = service('repository.form_attribute');
+        // we use an intermediate var to ensure stages which is an hydrated attr is not there when creating the form
+        $form  = $entity->asArray();
+        unset($form['stages']);
+        $new_form = new Form($form);
+        $id = parent::create($new_form->setState(['created' => time()]));
+        foreach ($entity->stages as $stage) {
+            $stage_id = $stage_repo->create(new FormStage(array_merge($stage, ['form_id' => $id])));
+            foreach ($stage['attributes'] as $attribute) {
+                $attribute_repo->create(new Entity\v4\FormAttribute(array_merge($attribute, ['form_stage_id' => $stage_id])));
+            }
+        }
         // todo ensure default group is created
         return $id;
     }
