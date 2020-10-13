@@ -24,7 +24,6 @@ use Ushahidi\Core\Traits\AdminAccess;
 
 class ContactRepository extends OhanzeeRepository implements
     ContactRepositoryContract,
-    CreateRepository,
     UpdateRepository,
     SearchRepository
 {

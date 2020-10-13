@@ -62,7 +62,7 @@ class OutgoingCommandTest extends TestCase
 
     public function testOutgoing()
     {
-        $value = $this->artisan('datasource:outgoing', []);
+        $value = Artisan::call('datasource:outgoing', []);
 
         $this->assertRegExp(
             "/\+--------------\+-------\+
@@ -80,7 +80,7 @@ class OutgoingCommandTest extends TestCase
 
     public function testOutgoingAll()
     {
-        $value = $this->artisan('datasource:outgoing', ["--all" => true]);
+        $value = Artisan::call('datasource:outgoing', ["--all" => true]);
 
         $this->assertRegExp(
             "/\+--------------\+-------\+
@@ -100,7 +100,7 @@ class OutgoingCommandTest extends TestCase
 
     public function testOutgoingNexmo()
     {
-        $value = $this->artisan('datasource:outgoing', ["--source" => "nexmo"]);
+        $value = Artisan::call('datasource:outgoing', ["--source" => "nexmo"]);
 
         $this->assertRegExp(
             "/\+--------\+-------\+

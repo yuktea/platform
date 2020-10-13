@@ -61,7 +61,7 @@ class ListCommandTest extends TestCase
 
     public function testList()
     {
-        $value = $this->artisan('datasource:list', []);
+        $value = Artisan::call('datasource:list', []);
 
         $this->assertEquals(
             "+--------------+----------+
@@ -78,7 +78,7 @@ class ListCommandTest extends TestCase
 
     public function testListAll()
     {
-        $value = $this->artisan('datasource:list', ["--all" => true]);
+        $value = Artisan::call('datasource:list', ["--all" => true]);
 
         $this->assertEquals(
             "+---------------+----------+

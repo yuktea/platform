@@ -70,7 +70,7 @@ class IncomingCommandTest extends TestCase
 
     public function testIncoming()
     {
-        $value = $this->artisan('datasource:incoming', []);
+        $value = Artisan::call('datasource:incoming', []);
 
         $this->assertEquals(
             "+---------+-------+
@@ -85,7 +85,7 @@ class IncomingCommandTest extends TestCase
 
     public function testIncomingAll()
     {
-        $value = $this->artisan('datasource:incoming', ["--all" => true]);
+        $value = Artisan::call('datasource:incoming', ["--all" => true]);
 
         $this->assertEquals(
             "+---------+-------+
@@ -101,7 +101,7 @@ class IncomingCommandTest extends TestCase
 
     public function testIncomingTwitter()
     {
-        $value = $this->artisan('datasource:incoming', ["--source" => "twitter"]);
+        $value = Artisan::call('datasource:incoming', ["--source" => "twitter"]);
 
         $this->assertEquals(
             "+---------+-------+
