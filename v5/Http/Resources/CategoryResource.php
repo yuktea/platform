@@ -6,6 +6,9 @@ use v5\Models\Category;
 
 class CategoryResource extends Resource
 {
+
+    use RequestCachedResource;
+
     public static $wrap = 'result';
 
     /**
@@ -16,6 +19,8 @@ class CategoryResource extends Resource
      */
     public function toArray($request)
     {
+        // Preload key relations
+        $this->resource->loadMissing(['parent', 'children', 'translations']);
         return [
             'id' => $this->id,
             'parent_id' => $this->parent_id,
@@ -25,10 +30,10 @@ class CategoryResource extends Resource
             'color' => $this->color,
             'icon' => $this->icon,
             'description' => $this->description,
-            'role' => $this->role,
+            'role' => $this->makeRole($this->role),
             'priority' => $this->priority,
-            'children' => new CategoryCollection($this->children),
-            'parent' => $this->parent,
+            'children' => $this->makeChildren($this->parent, $this->children),
+            'parent' => $this->makeParent($this->parent),
             'translations' => new TranslationCollection($this->translations),
             'enabled_languages' => [
                 'default'=> $this->base_language,
@@ -36,5 +41,28 @@ class CategoryResource extends Resource
             ],
             'translatable_fields' => Category::translatableAttributes()
         ];
+    }
+
+    protected function makeRole($role)
+    {
+        return ($role === 'null' || (is_array($role) && empty($role))) ? null : $role;
+    }
+
+    private function makeChildren($parent, $children)
+    {
+        // not having a parent means they are a parent.... I know, I know.
+        if (!$parent) {
+            return new CategoryCollection($children);
+        }
+        return [];
+    }
+
+    private function makeParent($parent)
+    {
+        // not having a parent means they are a parent.... I know, I know.
+        if (!$parent) {
+            return null;
+        }
+        return ParentCategoryResource::make($parent);
     }
 }
