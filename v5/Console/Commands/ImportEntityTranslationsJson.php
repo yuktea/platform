@@ -115,6 +115,7 @@ class ImportEntityTranslationsJson extends Command
                     return;
                 }
                 Translation::where('translatable_id', $item->id)
+                            ->where('translated_key', $item->attribute_name)
                             ->where('translatable_type', $item->output_type)
                             ->where('language', $target_language)
                             ->delete();
