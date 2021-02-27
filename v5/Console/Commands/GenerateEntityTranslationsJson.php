@@ -26,7 +26,7 @@ use Composer\Installer\PackageEvent;
 use Ushahidi\Core\Tool\FileData;
 use v5\Models\Attribute;
 use v5\Models\Category;
-use v5\Models\Post;
+use v5\Models\Post\Post;
 use v5\Models\Stage;
 use v5\Models\Survey;
 
@@ -291,42 +291,46 @@ class GenerateEntityTranslationsJson extends Command
             }
             $items = Collection::make([]);
             $surveys->each(function ($survey) use ($surveyAttributes, $language, &$items) {
+                // Make translatables for survey attributes
                 $surveyAttributes->each(function ($sAttr) use ($survey, &$items, $language) {
                     $toSave = $this->makeTranslatableItem($survey, 'survey', "Survey", $sAttr);
                     if ($toSave) {
                         $items->push($toSave);
                     }
-                    $stageAttributes = Collection::make(Stage::translatableAttributes());
-                    $survey->tasks->each(function ($task) use (&$items, $language, $stageAttributes) {
-                        $task->base_language = $language;
-                        $stageAttributes->each(function ($stgAttr) use (&$items, $task) {
+                });
+                $stageAttributes = Collection::make(Stage::translatableAttributes());
+                $survey->tasks->each(function ($task) use (&$items, $language, $stageAttributes) {
+                    $task->base_language = $language;
+                    // Make translatables for task/stage attributes
+                    $stageAttributes->each(function ($stgAttr) use (&$items, $task) {
+                        $toSave = $this->makeTranslatableItem(
+                            $task,
+                            'task',
+                            "Task in survey $task->form_id",
+                            $stgAttr
+                        );
+                        if ($toSave) {
+                            $items->push($toSave);
+                        }
+                    });
+                    $attrAttributes = Collection::make(Attribute::translatableAttributes());
+
+                    // Make translatables for the fields inside the task
+                    $task->fields->each(function ($attribute) use (&$items, $task, $language, $attrAttributes) {
+                        $attribute->base_language = $language;
+                        $attrAttributes->each(function ($attrAttr) use ($attribute, &$items, $task) {
+                            if ($attribute->type === 'tags') {
+                                return;
+                            }
                             $toSave = $this->makeTranslatableItem(
-                                $task,
-                                'task',
-                                "Task in survey $task->form_id",
-                                $stgAttr
+                                $attribute,
+                                'field',
+                                "Field in task $task->id, in survey $task->form_id",
+                                $attrAttr
                             );
                             if ($toSave) {
                                 $items->push($toSave);
                             }
-                        });
-                        $attrAttributes = Collection::make(Attribute::translatableAttributes());
-                        $task->fields->each(function ($attribute) use (&$items, $task, $language, $attrAttributes) {
-                            $attribute->base_language = $language;
-                            $attrAttributes->each(function ($attrAttr) use ($attribute, &$items, $task) {
-                                if ($attribute->type === 'tags') {
-                                    return;
-                                }
-                                $toSave = $this->makeTranslatableItem(
-                                    $attribute,
-                                    'field',
-                                    "Field in task $task->id, in survey $task->form_id",
-                                    $attrAttr
-                                );
-                                if ($toSave) {
-                                    $items->push($toSave);
-                                }
-                            });
                         });
                     });
                 });
